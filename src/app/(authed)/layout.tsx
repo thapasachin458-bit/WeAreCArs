@@ -53,34 +53,12 @@ export default function AuthedLayout({
   const isMobile = useIsMobile();
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/login');
-    }
-  }, [user, loading, router]);
-
   const handleLogout = async () => {
     if (!auth) return;
     setIsLoggingOut(true);
     await signOut(auth);
-    router.replace('/login');
+    router.replace('/');
   };
-
-  if (loading || !user) {
-    return (
-      <div className="flex h-screen">
-        <div className="w-64 bg-slate-100 p-4">
-          <Skeleton className="h-10 w-32 mb-8" />
-          <Skeleton className="h-8 w-full mb-4" />
-          <Skeleton className="h-8 w-full mb-4" />
-          <Skeleton className="h-8 w-full" />
-        </div>
-        <div className="flex-1 p-8">
-          <Skeleton className="h-20 w-full" />
-        </div>
-      </div>
-    );
-  }
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -114,27 +92,20 @@ export default function AuthedLayout({
         <SidebarFooter>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <SidebarMenuButton tooltip="Logout">
+              <SidebarMenuButton tooltip="Logout (disabled)">
                 <LogOut />
                 <span>Logout</span>
               </SidebarMenuButton>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogTitle>Logout Disabled</AlertDialogTitle>
                 <AlertDialogDescription>
-                  You will be logged out of your account and returned to the
-                  login page.
+                  Authentication is currently disabled.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                >
-                  {isLoggingOut ? 'Logging out...' : 'Logout'}
-                </AlertDialogAction>
+                <AlertDialogCancel>Close</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
