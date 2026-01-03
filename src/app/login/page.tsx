@@ -60,24 +60,11 @@ export default function LoginPage() {
     }
 
     try {
-      // First, try to sign in
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
     } catch (signInError: any) {
-      // If the user does not exist, try to create a new account
       if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/invalid-credential') {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(
-            auth,
-            values.email,
-            values.password
-          );
-          if (userCredential.user) {
-            router.push('/dashboard');
-          }
-        } catch (signUpError: any) {
-          setError(signUpError.message || 'An unexpected error occurred during sign-up.');
-        }
+         setError('No account found with this email. Please check your credentials or sign up.');
       } else if (signInError.code === 'auth/wrong-password') {
         setError('Incorrect password. Please try again.');
       } else {
@@ -93,9 +80,6 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Logo className="h-8 mx-auto mb-4" />
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Sign In
-          </CardTitle>
           <CardDescription>
             Access the WeAreCars rental system
           </CardDescription>
