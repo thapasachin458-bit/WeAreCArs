@@ -61,28 +61,28 @@ export default function LoginPage() {
     }
 
     try {
+      // First, try to sign in
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
-    } catch (err: any) {
-      // If user is not found, try to create a new one.
-      if (err.code === 'auth/user-not-found') {
+    } catch (signInError: any) {
+      // If the user does not exist, try to create a new account
+      if (signInError.code === 'auth/user-not-found') {
         try {
-          await createUserWithEmailAndPassword(
+          const userCredential = await createUserWithEmailAndPassword(
             auth,
             values.email,
             values.password
           );
-          // Try signing in again after creating the user.
-          await signInWithEmailAndPassword(auth, values.email, values.password);
-          router.push('/dashboard');
-        } catch (createErr: any) {
-           setError(createErr.message || 'An unexpected error occurred during signup.');
+          if (userCredential.user) {
+            router.push('/dashboard');
+          }
+        } catch (signUpError: any) {
+          setError(signUpError.message || 'An unexpected error occurred during sign-up.');
         }
-      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        setError('Invalid username or password.');
-      }
-      else {
-        setError(err.message || 'An unexpected error occurred.');
+      } else if (signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential') {
+        setError('Incorrect password. Please try again.');
+      } else {
+        setError(signInError.message || 'An unexpected error occurred during login.');
       }
     } finally {
       setIsLoading(false);
