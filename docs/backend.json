@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "Booking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Booking",
+      "type": "object",
+      "description": "Represents a car rental booking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the booking."
+        },
+        "customerFirstName": {
+          "type": "string",
+          "description": "First name of the customer."
+        },
+        "customerSurname": {
+          "type": "string",
+          "description": "Surname of the customer."
+        },
+        "customerAddress": {
+          "type": "string",
+          "description": "Address of the customer."
+        },
+        "customerAge": {
+          "type": "number",
+          "description": "Age of the customer. Must be 18 or older."
+        },
+        "validDrivingLicense": {
+          "type": "boolean",
+          "description": "Indicates if the customer has a valid driving license."
+        },
+        "numberOfDays": {
+          "type": "number",
+          "description": "Number of days the car is booked for (between 1 and 28)."
+        },
+        "typeOfCar": {
+          "type": "string",
+          "description": "Type of car booked (e.g., City Car, Family Car, Sports Car, SUV)."
+        },
+        "fuelType": {
+          "type": "string",
+          "description": "Fuel type of the car (e.g., Petrol, Diesel, Hybrid, Full Electric)."
+        },
+        "unlimitedMileage": {
+          "type": "boolean",
+          "description": "Indicates if unlimited mileage is included."
+        },
+        "breakdownCover": {
+          "type": "boolean",
+          "description": "Indicates if breakdown cover is included."
+        },
+        "baseRental": {
+          "type": "number",
+          "description": "The base rental fee for the car."
+        },
+        "carTypeSurcharge": {
+          "type": "number",
+          "description": "The car type surcharge."
+        },
+        "fuelSurcharge": {
+          "type": "number",
+          "description": "The fuel surcharge."
+        },
+        "optionalExtrasCost": {
+          "type": "number",
+          "description": "The cost of the optional extras."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "Total price of the booking."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the booking was made.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "customerFirstName",
+        "customerSurname",
+        "customerAddress",
+        "customerAge",
+        "validDrivingLicense",
+        "numberOfDays",
+        "typeOfCar",
+        "fuelType",
+        "totalPrice",
+        "timestamp",
+        "baseRental",
+        "carTypeSurcharge",
+        "fuelSurcharge",
+        "optionalExtrasCost"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/bookings/{bookingId}",
+        "definition": {
+          "entityName": "Booking",
+          "schema": {
+            "$ref": "#/backend/entities/Booking"
+          },
+          "description": "Stores car rental booking data. Only authenticated staff can read or write to this collection.",
+          "params": [
+            {
+              "name": "bookingId",
+              "description": "Unique identifier for the booking document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The data structure prioritizes security and simplicity for the WeAreCars rental management application. A single collection `/bookings` stores all booking documents. This structure avoids unnecessary complexity and hierarchical dependencies, enabling secure and efficient querying. To ensure only authenticated staff can access the system, Firebase Authentication is employed, and Firebase Security Rules are configured to restrict read/write access to authenticated users. This eliminates the need for complex authorization logic within the data structure itself.\n\nAuthorization Independence (CRITICAL): The structure inherently achieves authorization independence because all security rules will simply check `request.auth.uid != null` to ensure the user is authenticated. This eliminates the need for any `get()` calls in rules, simplifying security and ensuring atomic operations.\n\nQAPs (Rules are not Filters): The structure supports secure `list` operations by ensuring that all documents in the `/bookings` collection share the same security requirements: that the user is authenticated."
+  }
+}

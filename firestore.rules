@@ -1,0 +1,76 @@
+/**
+ * Core Philosophy:
+ * This ruleset enforces a simple, system-wide security model where access is granted
+ * exclusively to authenticated users. It is designed for an internal staff application
+ * where any signed-in user is considered a trusted staff member with full permissions
+ * to manage all data. Unauthenticated access is completely blocked.
+ *
+ * Data Structure:
+ * The data is organized into a single top-level collection: /bookings. This flat
+ * structure simplifies rule logic and queries, as all documents share the same
+ * access requirements. There are no user-specific subcollections.
+ *
+ * Key Security Decisions:
+ * - Authenticated-Only Access: All read and write operations on the /bookings
+ *   collection are restricted to users who have successfully signed in. This serves as
+ *   the primary security boundary.
+ * - No Document-Level Ownership: The rules do not distinguish between users. Any
+ *   authenticated user can read, create, update, or delete any booking document.
+ *   This is suitable for a collaborative internal tool.
+ * - Flexible Data Schema: In line with a prototyping philosophy, these rules do not
+ *   enforce the specific shape or data types of the booking documents. The focus is
+ *   strictly on authorization (who can access what), not data validation.
+ *
+ * Denormalization for Authorization:
+ * This security model is intentionally simple and does not require denormalization.
+ * Authorization is based solely on the user's authentication state (`request.auth != null`),
+ * which avoids the need for cross-document reads (`get()`) and ensures high performance.
+ *
+ * Structural Segregation:
+ * Not applicable in this model, as all data within the /bookings collection is
+ * treated with the same level of security and there is no concept of public vs. private data.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for readability and reuse.
+
+    /**
+     * Checks if the user making the request is authenticated.
+     * This is the foundation of the entire security model.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description
+     * Allows any authenticated user to perform any action (read, create, update, delete)
+     * on any booking document. This collection is for internal staff use.
+     *
+     * @path
+     * /bookings/{bookingId}
+     *
+     * @allow
+     * An authenticated user (auth.uid: 'staff_member_abc') can (create) a new booking.
+     *
+     * @deny
+     * An unauthenticated (guest) user is denied from (list)ing the bookings.
+     *
+     * @principle
+     * Enforces a simple system-wide access control where any authenticated user
+     * is considered an authorized staff member with full privileges.
+     */
+    match /bookings/{bookingId} {
+      // READ: Any authenticated user can read individual booking documents or list the entire collection.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+
+      // WRITE: Any authenticated user can create, update, or delete booking documents.
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+  }
+}
