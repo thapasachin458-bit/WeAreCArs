@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
-import { useFirebase } from '@/hooks/use-auth';
+import { useMemo } from 'react';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import type { Booking } from '@/lib/definitions';
 import {
   Table,
@@ -18,40 +18,13 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RentedCarsList() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { db } = useFirebase();
+  const firestore = useFirestore();
 
-  useEffect(() => {
-    if (!db) {
-      if (!loading) { // only set error if not loading
-        setError('Firebase is not configured.');
-      }
-      setLoading(false);
-      return;
-    }
-
-    const q = query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const bookingsData: Booking[] = [];
-        querySnapshot.forEach((doc) => {
-          bookingsData.push({ id: doc.id, ...doc.data() } as Booking);
-        });
-        setBookings(bookingsData);
-        setLoading(false);
-        setError(null);
-      },
-      (error) => {
-        console.error('Error fetching bookings:', error);
-        setError('Failed to fetch bookings.');
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
-  }, [db, loading]);
+  const bookingsQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'bookings'), orderBy('createdAt', 'desc')) : null
+  , [firestore]);
+  
+  const { data: bookings, isLoading, error } = useCollection<Booking>(bookingsQuery);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-GB', {
@@ -64,7 +37,7 @@ export default function RentedCarsList() {
     return timestamp.toDate().toLocaleDateString('en-GB');
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>
@@ -85,13 +58,13 @@ export default function RentedCarsList() {
     return (
       <Card className="text-center py-12">
         <CardContent>
-          <h3 className="text-xl font-semibold text-destructive">{error}</h3>
+          <h3 className="text-xl font-semibold text-destructive">{error.message}</h3>
         </CardContent>
       </Card>
     );
   }
 
-  if (bookings.length === 0) {
+  if (!bookings || bookings.length === 0) {
     return (
       <Card className="text-center py-12">
         <CardContent>

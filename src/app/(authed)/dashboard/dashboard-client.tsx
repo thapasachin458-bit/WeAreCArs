@@ -2,51 +2,32 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { useFirebase } from '@/hooks/use-auth';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { forecastFleetNeeds } from '@/ai/flows/fleet-forecasting-dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Car, Bot, TrendingUp } from 'lucide-react';
+import { Booking } from '@/lib/definitions';
 
 export default function DashboardClient() {
-  const [activeBookings, setActiveBookings] = useState(0);
+  const firestore = useFirestore();
+  
+  const bookingsQuery = useMemoFirebase(() => 
+    firestore ? query(collection(firestore, 'bookings')) : null
+  , [firestore]);
+  
+  const { data: bookings, isLoading: loadingBookings, error } = useCollection<Booking>(bookingsQuery);
+
   const [forecast, setForecast] = useState<{
     projectedCarNeeds: string;
     investmentSuggestion: string;
   } | null>(null);
-  const [loadingBookings, setLoadingBookings] = useState(true);
   const [loadingForecast, setLoadingForecast] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { db } = useFirebase();
+  const activeBookings = bookings?.length ?? 0;
 
   useEffect(() => {
-    if (!db) {
-        if(!loadingBookings) {
-            setError('Firebase is not configured.');
-        }
-      setLoadingBookings(false);
-      return;
-    }
-    const q = query(collection(db, 'bookings'));
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        setActiveBookings(querySnapshot.size);
-        setLoadingBookings(false);
-        setError(null);
-      },
-      (error) => {
-        console.error('Error fetching bookings:', error);
-        setError('Failed to fetch active bookings.');
-        setLoadingBookings(false);
-      }
-    );
-    return () => unsubscribe();
-  }, [db, loadingBookings]);
-
-  useEffect(() => {
-    if (!loadingBookings && activeBookings >= 0) {
+    if (!loadingBookings && bookings) {
       setLoadingForecast(true);
       forecastFleetNeeds({ activeBookings })
         .then((result) => {
@@ -63,7 +44,7 @@ export default function DashboardClient() {
           setLoadingForecast(false);
         });
     }
-  }, [activeBookings, loadingBookings]);
+  }, [activeBookings, loadingBookings, bookings]);
   
   if (error) {
     return (
@@ -72,7 +53,7 @@ export default function DashboardClient() {
           <CardTitle className="text-destructive">Error</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>{error}</p>
+          <p>{error.message}</p>
         </CardContent>
       </Card>
     );
@@ -114,7 +95,7 @@ export default function DashboardClient() {
           )}
           <p className="text-xs text-muted-foreground">
             Estimated cars needed for the next month.
-          </p>
+          p>
         </CardContent>
       </Card>
 

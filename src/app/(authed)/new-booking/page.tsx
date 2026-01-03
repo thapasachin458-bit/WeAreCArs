@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirebase } from '@/hooks/use-auth';
+import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
 import { bookingSchema } from '@/lib/schemas';
@@ -70,7 +70,7 @@ export default function NewBookingPage() {
   const [formData, setFormData] = useState<FormData | null>(null);
   const [priceDetails, setPriceDetails] = useState<PriceDetails>(calculateTotalCost({}));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { db } = useFirebase();
+  const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -81,7 +81,7 @@ export default function NewBookingPage() {
       customerFirstName: '',
       customerSurname: '',
       customerAddress: '',
-      customerAge: '' as any, // Initialize as empty string to be a controlled component
+      customerAge: '' as any, 
       hasDrivingLicense: undefined,
       numberOfDays: 1,
       carType: undefined,
@@ -109,7 +109,7 @@ export default function NewBookingPage() {
   };
 
   const handleConfirmBooking = async () => {
-    if (!formData || !db) {
+    if (!formData || !firestore) {
       toast({
         variant: 'destructive',
         title: 'Error',
@@ -119,27 +119,21 @@ export default function NewBookingPage() {
     }
 
     setIsSubmitting(true);
-    try {
-      await addDoc(collection(db, 'bookings'), {
-        ...formData,
-        totalPrice: priceDetails.totalCost,
-        createdAt: serverTimestamp(),
-      });
-      toast({
-        title: 'Booking Confirmed!',
-        description: 'The new rental has been saved successfully.',
-      });
-      router.push('/rented-cars');
-    } catch (error) {
-      console.error('Error adding document: ', error);
-      toast({
-        variant: 'destructive',
-        title: 'Submission Failed',
-        description: 'Could not save the booking. Please try again.',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    
+    const bookingsCollection = collection(firestore, 'bookings');
+    addDocumentNonBlocking(bookingsCollection, {
+      ...formData,
+      totalPrice: priceDetails.totalCost,
+      createdAt: serverTimestamp(),
+    });
+    
+    toast({
+      title: 'Booking Confirmed!',
+      description: 'The new rental has been saved successfully.',
+    });
+    router.push('/rented-cars');
+    setIsSubmitting(false);
+
   };
 
   if (step === 'summary' && formData) {
@@ -294,5 +288,3 @@ export default function NewBookingPage() {
     </div>
   );
 }
-
-    
