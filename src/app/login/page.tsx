@@ -14,7 +14,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -66,7 +65,7 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (signInError: any) {
       // If the user does not exist, try to create a new account
-      if (signInError.code === 'auth/user-not-found') {
+      if (signInError.code === 'auth/user-not-found' || signInError.code === 'auth/invalid-credential') {
         try {
           const userCredential = await createUserWithEmailAndPassword(
             auth,
@@ -79,7 +78,7 @@ export default function LoginPage() {
         } catch (signUpError: any) {
           setError(signUpError.message || 'An unexpected error occurred during sign-up.');
         }
-      } else if (signInError.code === 'auth/wrong-password' || signInError.code === 'auth/invalid-credential') {
+      } else if (signInError.code === 'auth/wrong-password') {
         setError('Incorrect password. Please try again.');
       } else {
         setError(signInError.message || 'An unexpected error occurred during login.');
@@ -95,7 +94,7 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <Logo className="h-8 mx-auto mb-4" />
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Staff Login
+            Sign In
           </CardTitle>
           <CardDescription>
             Access the WeAreCars rental system
