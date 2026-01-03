@@ -95,7 +95,7 @@ export default function DashboardClient() {
           )}
           <p className="text-xs text-muted-foreground">
             Estimated cars needed for the next month.
-          p>
+          </p>
         </CardContent>
       </Card>
 
