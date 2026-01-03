@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { useAuth, useFirebase } from '@/hooks/use-auth';
+import { useFirebase } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 
 import { bookingSchema } from '@/lib/schemas';
@@ -70,7 +70,6 @@ export default function NewBookingPage() {
   const [formData, setFormData] = useState<FormData | null>(null);
   const [priceDetails, setPriceDetails] = useState<PriceDetails>(calculateTotalCost({}));
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
   const { db } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
@@ -82,7 +81,7 @@ export default function NewBookingPage() {
       customerFirstName: '',
       customerSurname: '',
       customerAddress: '',
-      customerAge: undefined,
+      customerAge: '' as any, // Initialize as empty string to be a controlled component
       hasDrivingLicense: undefined,
       numberOfDays: 1,
       carType: undefined,
@@ -110,11 +109,11 @@ export default function NewBookingPage() {
   };
 
   const handleConfirmBooking = async () => {
-    if (!formData || !user || !db) {
+    if (!formData || !db) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Missing booking data, user not authenticated, or database not available.',
+        description: 'Missing booking data or database not available.',
       });
       return;
     }
@@ -125,7 +124,6 @@ export default function NewBookingPage() {
         ...formData,
         totalPrice: priceDetails.totalCost,
         createdAt: serverTimestamp(),
-        userId: user.uid,
       });
       toast({
         title: 'Booking Confirmed!',
@@ -213,7 +211,7 @@ export default function NewBookingPage() {
                     <FormItem className="sm:col-span-2"><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="customerAge" render={({ field }) => (
-                    <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : +e.target.value)} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : +e.target.value)} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="hasDrivingLicense" render={({ field }) => (
                     <FormItem><FormLabel>Valid Driving License?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4 pt-2">
@@ -296,3 +294,5 @@ export default function NewBookingPage() {
     </div>
   );
 }
+
+    

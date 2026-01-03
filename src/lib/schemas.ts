@@ -34,3 +34,5 @@ export const bookingSchema = z
     message: 'Customer must have a valid driving license to book a car.',
     path: ['hasDrivingLicense'],
   });
+
+    

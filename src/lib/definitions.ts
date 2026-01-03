@@ -25,9 +25,11 @@ export interface PriceDetails {
   totalCost: number;
 }
 
-export interface Booking extends BookingFormData {
+export interface Booking extends Omit<BookingFormData, 'customerAge'> {
   id: string;
+  customerAge: number;
   totalPrice: number;
   createdAt: Timestamp;
-  userId: string;
 }
+
+    
