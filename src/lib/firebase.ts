@@ -1,9 +1,9 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, type FirebaseOptions } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-const firebaseConfig = {
+const firebaseConfig: FirebaseOptions = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -12,7 +12,21 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check if all required environment variables are present
+let app;
+let auth;
+let db;
+
+if (typeof window !== 'undefined') {
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (e) {
+    console.error('Failed to initialize Firebase on the client', e);
+  }
+}
+
+// Check if all required environment variables are present for server-side
 const areAllFirebaseVarsPresent =
   firebaseConfig.apiKey &&
   firebaseConfig.authDomain &&
@@ -21,19 +35,15 @@ const areAllFirebaseVarsPresent =
   firebaseConfig.messagingSenderId &&
   firebaseConfig.appId;
 
-let app;
-try {
-  app = getApps().length
-    ? getApp()
-    : areAllFirebaseVarsPresent
-      ? initializeApp(firebaseConfig)
-      : undefined;
-} catch (e) {
-  console.error('Failed to initialize Firebase', e);
-  app = undefined;
+if (!app && areAllFirebaseVarsPresent) {
+    try {
+        app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+        auth = getAuth(app);
+        db = getFirestore(app);
+    } catch (e) {
+        console.error('Failed to initialize Firebase on the server', e);
+    }
 }
 
-const auth = app ? getAuth(app) : undefined;
-const db = app ? getFirestore(app) : undefined;
 
 export { app, auth, db };
