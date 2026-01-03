@@ -60,25 +60,11 @@ export default function LoginPage() {
       return;
     }
 
-    const fixedUsername = 'sta001@wearecars.com';
-    const fixedPassword = 'givemethekeys123';
-
-    if (
-      values.email.toLowerCase() !== fixedUsername ||
-      values.password !== fixedPassword
-    ) {
-      setError(
-        'Invalid credentials. Please use the provided staff username and password.'
-      );
-      setIsLoading(false);
-      return;
-    }
-
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
     } catch (err: any) {
-      // Create user if not exists
+      // If user is not found, try to create a new one.
       if (err.code === 'auth/user-not-found') {
         try {
           await createUserWithEmailAndPassword(
@@ -86,12 +72,16 @@ export default function LoginPage() {
             values.email,
             values.password
           );
+          // Try signing in again after creating the user.
           await signInWithEmailAndPassword(auth, values.email, values.password);
           router.push('/dashboard');
         } catch (createErr: any) {
            setError(createErr.message || 'An unexpected error occurred during signup.');
         }
-      } else {
+      } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError('Invalid username or password.');
+      }
+      else {
         setError(err.message || 'An unexpected error occurred.');
       }
     } finally {
