@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirebase } from '@/hooks/use-auth';
 import type { Booking } from '@/lib/definitions';
 import {
   Table,
@@ -20,10 +21,13 @@ export default function RentedCarsList() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { db } = useFirebase();
 
   useEffect(() => {
     if (!db) {
-      setError('Firebase is not configured.');
+      if (!loading) { // only set error if not loading
+        setError('Firebase is not configured.');
+      }
       setLoading(false);
       return;
     }
@@ -38,6 +42,7 @@ export default function RentedCarsList() {
         });
         setBookings(bookingsData);
         setLoading(false);
+        setError(null);
       },
       (error) => {
         console.error('Error fetching bookings:', error);
@@ -46,7 +51,7 @@ export default function RentedCarsList() {
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [db, loading]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-GB', {

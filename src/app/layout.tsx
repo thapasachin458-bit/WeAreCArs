@@ -1,7 +1,8 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/components/auth-provider';
+import { AuthProvider, FirebaseProvider } from '@/components/auth-provider';
 
 export const metadata: Metadata = {
   title: 'WeAreCars Rental Manager',
@@ -24,10 +25,12 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased h-full">
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <FirebaseProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </FirebaseProvider>
       </body>
     </html>
   );

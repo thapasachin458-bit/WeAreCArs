@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,8 +6,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirebase } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 
 import { bookingSchema } from '@/lib/schemas';
@@ -71,6 +71,7 @@ export default function NewBookingPage() {
   const [priceDetails, setPriceDetails] = useState<PriceDetails>(calculateTotalCost({}));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  const { db } = useFirebase();
   const router = useRouter();
   const { toast } = useToast();
 

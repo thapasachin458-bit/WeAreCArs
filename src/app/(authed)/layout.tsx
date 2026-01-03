@@ -1,10 +1,10 @@
+
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFirebase } from '@/hooks/use-auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 
 import {
@@ -47,6 +47,7 @@ export default function AuthedLayout({
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
+  const { auth } = useFirebase();
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();

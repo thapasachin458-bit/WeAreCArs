@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useFirebase } from '@/hooks/use-auth';
 import { forecastFleetNeeds } from '@/ai/flows/fleet-forecasting-dashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,10 +18,13 @@ export default function DashboardClient() {
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [loadingForecast, setLoadingForecast] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { db } = useFirebase();
 
   useEffect(() => {
     if (!db) {
-      setError('Firebase is not configured.');
+        if(!loadingBookings) {
+            setError('Firebase is not configured.');
+        }
       setLoadingBookings(false);
       return;
     }
@@ -30,6 +34,7 @@ export default function DashboardClient() {
       (querySnapshot) => {
         setActiveBookings(querySnapshot.size);
         setLoadingBookings(false);
+        setError(null);
       },
       (error) => {
         console.error('Error fetching bookings:', error);
@@ -38,7 +43,7 @@ export default function DashboardClient() {
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [db, loadingBookings]);
 
   useEffect(() => {
     if (!loadingBookings && activeBookings >= 0) {
