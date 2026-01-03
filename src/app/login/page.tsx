@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -79,13 +79,8 @@ export default function LoginPage() {
       // Create user if not exists
       if (err.code === 'auth/user-not-found') {
         try {
-          const {
-            user,
-          } = require('firebase/auth');
-          const { getAuth, createUserWithEmailAndPassword } = require('firebase/auth');
-          const authInstance = getAuth();
           await createUserWithEmailAndPassword(
-            authInstance,
+            auth,
             values.email,
             values.password
           );
