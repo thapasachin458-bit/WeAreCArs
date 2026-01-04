@@ -2,23 +2,33 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getAuth, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
+
+// Define a type for the returned services for better type safety
+interface FirebaseServices {
+  firebaseApp: FirebaseApp;
+  auth: Auth;
+  firestore: Firestore;
+}
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
-export function initializeFirebase() {
+export function initializeFirebase(): FirebaseServices | null {
+  // This check ensures Firebase is only initialized on the client side.
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
   if (getApps().length) {
-    return getSdks(getApp());
+    const app = getApp();
+    return getSdks(app);
   }
 
-  // When deploying to Vercel or other non-Firebase hosting, we must directly
-  // use the firebaseConfig object populated by environment variables.
-  // The automatic initialization only works on Firebase App Hosting.
   const firebaseApp = initializeApp(firebaseConfig);
   return getSdks(firebaseApp);
 }
 
-export function getSdks(firebaseApp: FirebaseApp) {
+export function getSdks(firebaseApp: FirebaseApp): FirebaseServices {
   return {
     firebaseApp,
     auth: getAuth(firebaseApp),
