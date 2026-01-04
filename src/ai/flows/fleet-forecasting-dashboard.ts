@@ -43,7 +43,7 @@ const fleetForecastingPrompt = ai.definePrompt({
   input: {schema: FleetForecastingInputSchema},
   output: {schema: FleetForecastingOutputSchema},
   prompt: `You are an expert in car rental fleet management.
-Given the current number of active bookings, estimate the number of cars WeAreCars will need in the next month and suggest whether fleet growth would be a good investment.
+Given the current number of active bookings, estimate the number of cars the company will need in the next month and suggest whether fleet growth would be a good investment.
 
 Active Bookings: {{{activeBookings}}}
 

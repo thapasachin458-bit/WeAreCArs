@@ -39,60 +39,19 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   ArrowUp,
-  ArrowDown,
-  DollarSign,
+  BookOpenCheck,
   Car,
   Filter,
   Calendar as CalendarIcon,
   Clock,
 } from 'lucide-react';
 import { format } from 'date-fns';
-
-const incomeData = {
-  amount: 9460.0,
-  change: 1.5,
-  changeType: 'increase',
-  comparisonYesterday: '9940',
-  comparisonLastWeek: '25658.00',
-};
-
-const expensesData = {
-  amount: 5660.0,
-  change: 2.5,
-  changeType: 'increase',
-  comparisonYesterday: '5240',
-  comparisonLastWeek: '25658.00',
-};
-
-const liveCarStatus = [
-  {
-    id: '01',
-    carNo: '6465',
-    driver: 'Alex Noman',
-    avatar: 'https://i.pravatar.cc/150?u=alexnoman',
-    status: 'Completed',
-    earning: 35.44,
-  },
-  {
-    id: '02',
-    carNo: '5665',
-    driver: 'Razib Rahman',
-    avatar: 'https://i.pravatar.cc/150?u=razibrahman',
-    status: 'Pending',
-    earning: 0.0,
-  },
-  {
-    id: '03',
-    carNo: '1755',
-    driver: 'Luke Norton',
-    avatar: 'https://i.pravatar.cc/150?u=lukenorton',
-    status: 'In route',
-    earning: 23.5,
-  },
-];
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { Booking } from '@/lib/definitions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const earningSummaryData = [
   { name: 'May', last6months: 180000, lastYear: 150000 },
@@ -103,100 +62,86 @@ const earningSummaryData = [
   { name: 'Oct', last6months: 210000, lastYear: 240000 },
 ];
 
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case 'Completed':
-      return (
-        <Badge
-          variant="secondary"
-          className="bg-green-100 text-green-700 border-green-200"
-        >
-          <span className="inline-block h-2 w-2 rounded-full bg-green-500 mr-2"></span>
-          {status}
-        </Badge>
-      );
-    case 'Pending':
-      return (
-        <Badge
-          variant="secondary"
-          className="bg-blue-100 text-blue-700 border-blue-200"
-        >
-          <span className="inline-block h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
-          {status}
-        </Badge>
-      );
-    case 'In route':
-      return (
-        <Badge
-          variant="secondary"
-          className="bg-red-100 text-red-700 border-red-200"
-        >
-          <span className="inline-block h-2 w-2 rounded-full bg-red-500 mr-2"></span>
-          {status}
-        </Badge>
-      );
-    default:
-      return <Badge>{status}</Badge>;
-  }
-};
-
 const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
+  new Intl.NumberFormat('en-GB', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'GBP',
     minimumFractionDigits: 2,
   }).format(amount);
 
+const formatDate = (timestamp: any) => {
+  if (!timestamp) return 'N/A';
+  return timestamp.toDate().toLocaleDateString('en-GB');
+};
+
 export default function DashboardClient() {
   const [date, setDate] = useState<Date | undefined>(new Date('2022-11-20'));
+  const firestore = useFirestore();
+
+  const allBookingsQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'bookings')) : null),
+    [firestore]
+  );
+  const { data: allBookings, isLoading: isAllBookingsLoading } =
+    useCollection<Booking>(allBookingsQuery);
+
+  const recentBookingsQuery = useMemoFirebase(
+    () =>
+      firestore
+        ? query(collection(firestore, 'bookings'), orderBy('createdAt', 'desc'), limit(5))
+        : null,
+    [firestore]
+  );
+  const { data: recentBookings, isLoading: isRecentBookingsLoading } =
+    useCollection<Booking>(recentBookingsQuery);
+
+  const totalIncome =
+    allBookings?.reduce((sum, booking) => sum + booking.totalPrice, 0) ?? 0;
+  const totalBookings = allBookings?.length ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Statistics Cards */}
         <Card>
-          <CardHeader>
+          <CardHeader className='pb-2'>
             <CardTitle className="text-base font-medium text-muted-foreground">
-              Income
+              Total Income
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl font-bold">
-                {formatCurrency(incomeData.amount)}
-              </span>
-              <span className="flex items-center text-sm text-red-500">
-                <ArrowDown className="h-4 w-4 mr-1" /> {incomeData.change}%
-              </span>
-            </div>
+            {isAllBookingsLoading ? (
+              <Skeleton className="h-8 w-3/4" />
+            ) : (
+              <div className="text-3xl font-bold">
+                {formatCurrency(totalIncome)}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground mt-2">
-              Compared to {formatCurrency(parseFloat(incomeData.comparisonYesterday))} yesterday
+              Sum of all historical bookings.
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium text-muted-foreground">
-              Expenses
+          <CardHeader className='pb-2'>
+            <CardTitle className="text-base font-medium text-muted-foreground flex items-center gap-2">
+              <BookOpenCheck size={16}/> Total Bookings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl font-bold">
-                {formatCurrency(expensesData.amount)}
-              </span>
-              <span className="flex items-center text-sm text-green-500">
-                <ArrowUp className="h-4 w-4 mr-1" /> {expensesData.change}%
-              </span>
-            </div>
+             {isAllBookingsLoading ? (
+              <Skeleton className="h-8 w-1/4" />
+            ) : (
+              <div className="text-3xl font-bold">
+                {totalBookings}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground mt-2">
-              Compared to {formatCurrency(parseFloat(expensesData.comparisonYesterday))} yesterday
+              Total number of bookings made.
             </p>
           </CardContent>
         </Card>
 
-        {/* Car Availability Card */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
@@ -259,11 +204,10 @@ export default function DashboardClient() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Live Car Status */}
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg font-semibold">
-              Live Car Status
+              Recent Bookings
             </CardTitle>
             <Button variant="ghost" size="sm">
               <Filter className="h-4 w-4 mr-2" />
@@ -271,52 +215,50 @@ export default function DashboardClient() {
             </Button>
           </CardHeader>
           <CardContent>
-            <Table>
+             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">No.</TableHead>
-                  <TableHead>Car no.</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Earning</TableHead>
-                  <TableHead className="text-right">Details</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Car Type</TableHead>
+                  <TableHead>Total Price</TableHead>
+                  <TableHead className="text-right">Booking Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {liveCarStatus.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.id}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{item.carNo}</Badge>
-                    </TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={item.avatar} alt={item.driver} />
-                        <AvatarFallback>
-                          {item.driver.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{item.driver}</span>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                    <TableCell>{formatCurrency(item.earning)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm">Details</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {isRecentBookingsLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  recentBookings?.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{item.customerFirstName} {item.customerSurname}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{item.carType}</Badge>
+                      </TableCell>
+                      <TableCell>{formatCurrency(item.totalPrice)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatDate(item.createdAt)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
 
-        {/* Earning Summary */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
               Earning Summary
             </CardTitle>
-            <CardDescription>Mar 2022 - Oct 2022</CardDescription>
+            <CardDescription>Last 6 months (mock data)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[250px]">
