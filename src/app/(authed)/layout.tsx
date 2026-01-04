@@ -73,7 +73,7 @@ export default function AuthedLayout({
 
 
   const mainNavItems = [
-    { href: '/', label: 'Dashboard', icon: LayoutGrid },
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
     { href: '/new-booking', label: 'New Booking', icon: PlusCircle },
     { href: '/rented-cars', label: 'Rented Cars', icon: Car },
   ];
