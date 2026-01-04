@@ -4,7 +4,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
+import {
+  PlusCircle,
+  LayoutGrid,
+  Car,
+  LogOut,
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -28,15 +33,10 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Logo from '@/components/logo';
-import {
-  LayoutGrid,
-  Car,
-  BookOpenCheck,
-  Bell,
-  Settings,
-  LogOut,
-} from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AuthedLayout({
   children,
@@ -45,13 +45,12 @@ export default function AuthedLayout({
 }) {
   const pathname = usePathname();
   const isMobile = useIsMobile();
-  
+  const router = useRouter();
+
   const mainNavItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-    { href: '#', label: 'Drivers', icon: Car },
-    { href: '/rented-cars', label: 'Bookings', icon: BookOpenCheck },
-    { href: '#', label: 'Notifications', icon: Bell },
-    { href: '#', label: 'Settings', icon: Settings },
+    { href: '/new-booking', label: 'New Booking', icon: PlusCircle },
+    { href: '/rented-cars', label: 'Rented Cars', icon: Car },
   ];
 
   return (
