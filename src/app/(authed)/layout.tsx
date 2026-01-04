@@ -15,9 +15,6 @@ import {
   SidebarFooter,
   SidebarProvider,
   SidebarInset,
-  SidebarSeparator,
-  SidebarGroup,
-  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import {
   AlertDialog,
@@ -37,10 +34,6 @@ import {
   BookOpenCheck,
   Bell,
   Settings,
-  CircleHelp,
-  FileText,
-  CreditCard,
-  Replace,
   LogOut,
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -59,12 +52,6 @@ export default function AuthedLayout({
     { href: '/rented-cars', label: 'Bookings', icon: BookOpenCheck },
     { href: '#', label: 'Notifications', icon: Bell },
     { href: '#', label: 'Settings', icon: Settings },
-  ];
-
-  const reportNavItems = [
-    { href: '#', label: 'Payment Details', icon: CreditCard },
-    { href: '#', label: 'Transactions', icon: Replace },
-    { href: '#', label: 'Car Report', icon: FileText },
   ];
 
   return (
@@ -89,28 +76,6 @@ export default function AuthedLayout({
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-          
-          <SidebarSeparator />
-
-          <SidebarGroup>
-            <SidebarGroupLabel>Report</SidebarGroupLabel>
-            <SidebarMenu>
-              {reportNavItems.map((item) => (
-                <SidebarMenuItem key={item.label}>
-                  <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                      isActive={pathname.startsWith(item.href)}
-                      tooltip={item.label}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-
         </SidebarContent>
         <SidebarFooter>
           <AlertDialog>
