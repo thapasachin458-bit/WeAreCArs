@@ -2,6 +2,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export type CarType = 'City Car' | 'Family Car' | 'Sports Car' | 'SUV';
 export type FuelType = 'Petrol' | 'Diesel' | 'Hybrid' | 'Full Electric';
+export type PaymentMethod = 'Cash' | 'Fonepay' | 'Card';
 
 export interface BookingFormData {
   customerFirstName: string;
@@ -12,6 +13,7 @@ export interface BookingFormData {
   numberOfDays: number;
   carType: CarType;
   fuelType: FuelType;
+  paymentMethod: PaymentMethod;
   unlimitedMileage: boolean;
   breakdownCover: boolean;
 }
@@ -31,5 +33,3 @@ export interface Booking extends Omit<BookingFormData, 'customerAge'> {
   totalPrice: number;
   createdAt: Timestamp;
 }
-
-    

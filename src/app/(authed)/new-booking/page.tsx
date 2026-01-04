@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -10,7 +9,7 @@ import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useRouter } from 'next/navigation';
 
 import { bookingSchema } from '@/lib/schemas';
-import type { BookingFormData, PriceDetails, CarType, FuelType } from '@/lib/definitions';
+import type { BookingFormData, PriceDetails, CarType, FuelType, PaymentMethod } from '@/lib/definitions';
 import { calculateTotalCost } from '@/lib/pricing';
 
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, Car, Fuel, Gauge, ShieldCheck, Users, MapPin, CalendarDays, Wallet } from 'lucide-react';
+import { AlertTriangle, Car, Fuel, Gauge, ShieldCheck, Users, MapPin, CalendarDays, Wallet, CreditCard } from 'lucide-react';
 
 type FormData = z.infer<typeof bookingSchema>;
 
@@ -81,11 +80,12 @@ export default function NewBookingPage() {
       customerFirstName: '',
       customerSurname: '',
       customerAddress: '',
-      customerAge: '' as any, 
+      customerAge: '' as any,
       hasDrivingLicense: undefined,
       numberOfDays: 1,
       carType: undefined,
       fuelType: undefined,
+      paymentMethod: undefined,
       unlimitedMileage: false,
       breakdownCover: false,
     },
@@ -156,6 +156,7 @@ export default function NewBookingPage() {
               <p><strong>Car Type:</strong> {formData.carType}</p>
               <p><strong>Fuel Type:</strong> {formData.fuelType}</p>
               <p><strong>Duration:</strong> {formData.numberOfDays} days</p>
+              <p><strong>Payment Method:</strong> {formData.paymentMethod}</p>
               
               <h3 className="font-semibold text-lg mt-4">Extras</h3>
               <p><strong>Unlimited Mileage:</strong> {formData.unlimitedMileage ? 'Yes' : 'No'}</p>
@@ -205,7 +206,7 @@ export default function NewBookingPage() {
                     <FormItem className="sm:col-span-2"><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="customerAge" render={({ field }) => (
-                    <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(e.target.value === '' ? '' : +e.target.value)} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? '' : +e.target.value)} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="hasDrivingLicense" render={({ field }) => (
                     <FormItem><FormLabel>Valid Driving License?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4 pt-2">
@@ -233,12 +234,28 @@ export default function NewBookingPage() {
                     </Select><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="fuelType" render={({ field }) => (
-                    <FormItem><FormLabel className="flex items-center gap-2"><Fuel size={16}/>Fuel Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormItem className="sm:col-span-2"><FormLabel className="flex items-center gap-2"><Fuel size={16}/>Fuel Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Select a fuel type" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {(['Petrol', 'Diesel', 'Hybrid', 'Full Electric'] as FuelType[]).map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                       </SelectContent>
                     </Select><FormMessage /></FormItem>
+                  )} />
+                   <FormField control={form.control} name="paymentMethod" render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel className="flex items-center gap-2"><CreditCard size={16}/>Payment Method</FormLabel>
+                      <FormControl>
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4 pt-2">
+                          {(['Cash', 'Fonepay', 'Card'] as PaymentMethod[]).map(method => (
+                            <FormItem key={method} className="flex items-center space-x-2">
+                              <FormControl><RadioGroupItem value={method} /></FormControl>
+                              <FormLabel className="font-normal">{method}</FormLabel>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                 </CardContent>
               </Card>

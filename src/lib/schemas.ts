@@ -27,6 +27,9 @@ export const bookingSchema = z
     fuelType: z.enum(['Petrol', 'Diesel', 'Hybrid', 'Full Electric'], {
       required_error: 'You must select a fuel type.',
     }),
+    paymentMethod: z.enum(['Cash', 'Fonepay', 'Card'], {
+      required_error: 'You must select a payment method.',
+    }),
     unlimitedMileage: z.boolean().default(false),
     breakdownCover: z.boolean().default(false),
   })
@@ -34,5 +37,3 @@ export const bookingSchema = z
     message: 'Customer must have a valid driving license to book a car.',
     path: ['hasDrivingLicense'],
   });
-
-    

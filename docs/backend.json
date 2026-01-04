@@ -42,6 +42,15 @@
           "type": "string",
           "description": "Fuel type of the car (e.g., Petrol, Diesel, Hybrid, Full Electric)."
         },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The method used for payment.",
+          "enum": [
+            "Cash",
+            "Fonepay",
+            "Card"
+          ]
+        },
         "unlimitedMileage": {
           "type": "boolean",
           "description": "Indicates if unlimited mileage is included."
@@ -86,6 +95,7 @@
         "numberOfDays",
         "typeOfCar",
         "fuelType",
+        "paymentMethod",
         "totalPrice",
         "timestamp",
         "baseRental",

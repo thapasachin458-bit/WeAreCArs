@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -89,6 +88,7 @@ export default function RentedCarsList() {
               <TableHead>Customer Name</TableHead>
               <TableHead className="hidden sm:table-cell">Car Type</TableHead>
               <TableHead className="hidden md:table-cell">Days Booked</TableHead>
+              <TableHead className="hidden md:table-cell">Payment By</TableHead>
               <TableHead>Total Price</TableHead>
               <TableHead className="hidden sm:table-cell text-right">Booking Date</TableHead>
             </TableRow>
@@ -103,6 +103,9 @@ export default function RentedCarsList() {
                   <Badge variant="secondary">{booking.carType}</Badge>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">{booking.numberOfDays}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                   <Badge variant="outline">{booking.paymentMethod}</Badge>
+                </TableCell>
                 <TableCell className="font-semibold">{formatCurrency(booking.totalPrice)}</TableCell>
                 <TableCell className="hidden sm:table-cell text-right">
                   {formatDate(booking.createdAt)}
