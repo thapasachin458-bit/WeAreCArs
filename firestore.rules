@@ -63,14 +63,8 @@ service cloud.firestore {
      * is considered an authorized staff member with full privileges.
      */
     match /bookings/{bookingId} {
-      // READ: Any authenticated user can read individual booking documents or list the entire collection.
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-
-      // WRITE: Any authenticated user can create, update, or delete booking documents.
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      // Allow public read and write access for development without login.
+      allow read, write: if true;
     }
   }
 }
