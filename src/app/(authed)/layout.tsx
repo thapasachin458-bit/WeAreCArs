@@ -76,7 +76,7 @@ export default function AuthedLayout({
         <SidebarContent>
           <SidebarMenu>
             {mainNavItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
+              <SidebarMenuItem key={item.label}>
                 <Link href={item.href} passHref>
                   <SidebarMenuButton
                     isActive={pathname.startsWith(item.href)}
@@ -96,7 +96,7 @@ export default function AuthedLayout({
             <SidebarGroupLabel>Report</SidebarGroupLabel>
             <SidebarMenu>
               {reportNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
+                <SidebarMenuItem key={item.label}>
                   <Link href={item.href} passHref>
                     <SidebarMenuButton
                       isActive={pathname.startsWith(item.href)}
