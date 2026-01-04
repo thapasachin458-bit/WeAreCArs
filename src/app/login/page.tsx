@@ -1,11 +1,11 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, initiateEmailSignIn } from '@/firebase';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +29,7 @@ import Logo from '@/components/logo';
 import { AlertTriangle } from 'lucide-react';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
+  username: z.string().min(1, { message: 'Username is required.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
@@ -37,13 +37,23 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const auth = useAuth();
   
+  // Redirect if already logged in
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        router.replace('/dashboard');
+      }
+    } catch (e) {
+      // sessionStorage not available
+    }
+  }, [router]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: 'staff001@wearecars.com',
-      password: 'password',
+      username: '',
+      password: '',
     },
   });
 
@@ -51,22 +61,19 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-    if (!auth) {
-      setError('Firebase is not configured.');
-      setIsLoading(false);
-      return;
-    }
-    
-    // Non-blocking sign-in, will redirect via useUser hook
-    initiateEmailSignIn(auth, values.email, values.password);
-
-    // Note: We don't handle the redirect or error here directly.
-    // The useUser hook in the layout will detect the auth state change and redirect.
-    // For this prototype, we'll manually push, but a real app would have a listener.
-    // A setTimeout is used here to simulate network latency and allow auth state to propagate.
+    // Simulate network latency
     setTimeout(() => {
-       router.push('/dashboard');
-    }, 1000);
+      if (values.username === 'sta001' && values.password === 'givemethekeys123') {
+        try {
+          sessionStorage.setItem('isLoggedIn', 'true');
+        } finally {
+           router.push('/dashboard');
+        }
+      } else {
+        setError('Invalid username or password. Please try again.');
+        setIsLoading(false);
+      }
+    }, 500);
   }
 
   return (
@@ -74,8 +81,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Logo className="h-8 mx-auto mb-4" />
+          <CardTitle className="text-2xl">Staff Login</CardTitle>
           <CardDescription>
-            Access the Car Rental system
+            Access the Car Rental management system
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -90,15 +98,15 @@ export default function LoginPage() {
               )}
               <FormField
                 control={form.control}
-                name="email"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="sta001@carrent.com"
+                        placeholder="sta001"
                         {...field}
-                        autoComplete="email"
+                        autoComplete="username"
                       />
                     </FormControl>
                     <FormMessage />
