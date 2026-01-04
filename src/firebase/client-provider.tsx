@@ -1,34 +1,26 @@
 'use client';
 
-import React, { useMemo, type ReactNode } from 'react';
-import { FirebaseProvider } from '@/firebase/provider';
-import { initializeFirebase } from '@/firebase';
+import React, { type ReactNode } from 'react';
+import { FirebaseProvider as InternalFirebaseProvider } from '@/firebase/provider';
+import { firebaseApp } from '@/lib/config';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 interface FirebaseClientProviderProps {
   children: ReactNode;
 }
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  const firebaseServices = useMemo(() => {
-    // initializeFirebase() now handles the client-side check and may return null
-    return initializeFirebase();
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  // If services are null (i.e., on the server), we can render a loading state or nothing,
-  // but we must not try to pass null services to the provider.
-  // The provider expects non-null values.
-  if (!firebaseServices) {
-    // Render nothing on the server. The client will re-render with the full provider.
-    return <>{children}</>;
-  }
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
 
   return (
-    <FirebaseProvider
-      firebaseApp={firebaseServices.firebaseApp}
-      auth={firebaseServices.auth}
-      firestore={firebaseServices.firestore}
+    <InternalFirebaseProvider
+      firebaseApp={firebaseApp}
+      auth={auth}
+      firestore={firestore}
     >
       {children}
-    </FirebaseProvider>
+    </InternalFirebaseProvider>
   );
 }

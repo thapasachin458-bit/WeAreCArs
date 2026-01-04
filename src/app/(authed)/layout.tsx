@@ -35,6 +35,7 @@ import {
 import Logo from '@/components/logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FirebaseProvider } from '@/firebase';
 
 export default function AuthedLayout({
   children,
@@ -89,52 +90,54 @@ export default function AuthedLayout({
   }
 
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
-      <Sidebar collapsible="icon">
-        <SidebarHeader>
-          <Logo className="h-8" />
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {mainNavItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <Link href={item.href} passHref>
-                  <SidebarMenuButton
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <SidebarMenuButton tooltip="Logout">
-                <LogOut />
-                <span>Logout</span>
-              </SidebarMenuButton>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>{children}</SidebarInset>
-    </SidebarProvider>
+    <FirebaseProvider>
+      <SidebarProvider defaultOpen={!isMobile}>
+        <Sidebar collapsible="icon">
+          <SidebarHeader>
+            <Logo className="h-8" />
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+              {mainNavItems.map((item) => (
+                <SidebarMenuItem key={item.label}>
+                  <Link href={item.href} passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === item.href}
+                      tooltip={item.label}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <SidebarMenuButton tooltip="Logout">
+                  <LogOut />
+                  <span>Logout</span>
+                </SidebarMenuButton>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure you want to log out?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </FirebaseProvider>
   );
 }
