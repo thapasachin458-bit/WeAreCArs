@@ -1,5 +1,5 @@
 'use client';
-
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Bell, Search } from 'lucide-react';
@@ -15,18 +15,24 @@ import {
 import DashboardClient from './dashboard-client';
 
 function Header() {
-  const today = new Date();
-  
-  const formattedDate = today.toLocaleDateString('en-US', {
-    weekday: 'short',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }) + ', ' + today.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  const [formattedDate, setFormattedDate] = useState('');
+
+  useEffect(() => {
+    const today = new Date();
+    const date = today.toLocaleDateString('en-US', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+    const time = today.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    setFormattedDate(`${date}, ${time}`);
+  }, []);
+
 
   return (
     <header className="flex h-16 items-center justify-between bg-background px-4 md:px-6">
