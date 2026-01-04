@@ -141,66 +141,6 @@ export default function DashboardClient() {
             </p>
           </CardContent>
         </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">
-              Car Availability
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-4">
-              <Select>
-                <SelectTrigger className="w-full">
-                  <div className="flex items-center gap-2">
-                    <Car className="h-4 w-4 text-muted-foreground" />
-                    <SelectValue placeholder="Car number" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="6465">6465</SelectItem>
-                  <SelectItem value="5665">5665</SelectItem>
-                  <SelectItem value="1755">1755</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={'outline'}
-                    className="w-full justify-start text-left font-normal"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-
-              <Select>
-                <SelectTrigger className="w-full">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <SelectValue placeholder="10 AM" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10:00">10 AM</SelectItem>
-                  <SelectItem value="11:00">11 AM</SelectItem>
-                  <SelectItem value="12:00">12 PM</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button className="w-full">Check</Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
